@@ -28,8 +28,8 @@ contract HarvestManager is Ownable {
     address[] public beneficiariesList;
 
     /// @notice create instace of the Vault contract
-    Vault vault;
-    IERC20 stETH;
+    Vault public vault;
+    IERC20 public stETH;
 
     /// @notice Event fired when new beneficiary is added
     event BeneficiaryAdded(address beneficiary, address user);
