@@ -29,6 +29,7 @@ contract HarvestManager is Ownable {
 
     /// @notice create instace of the Vault contract
     Vault vault;
+    IERC20 stETH;
 
     /// @notice Event fired when new beneficiary is added
     event BeneficiaryAdded(address beneficiary, address user);
@@ -39,9 +40,9 @@ contract HarvestManager is Ownable {
     /// @notice Event fired when shares are renounced from beneficiaries;
     event SharesRenounced(address[] _beneficiaries, uint256[] _shares);
 
-    constructor(address _vaultAddress) {
+    constructor(address payable _vaultAddress, address _stETHAddress) {
         vault = Vault(_vaultAddress);
-        IERC20 stETH = IERC20(0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84);
+        stETH = IERC20(_stETHAddress);
     }
 
     /**
