@@ -1,105 +1,79 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-// Imports of Openzeppelin security contracts
+import {IstETH} from './interfaces/IstETH.sol';
+import {ImpactETHtoken} from './imETHtoken.sol';
 
-import {Ownable} from 'openzeppelin-contracts/access/Ownable.sol'; // allows usage onlyOwner modifier
-import {ERC20} from 'openzeppelin-contracts/token/ERC20/ERC20.sol';
-import {ILido} from './interfaces/ILido.sol';
+/**
+    @title Impact Vault contract
+    @notice Users can deposit ETH to this contract, that will be staked with Lido. 
+    The staking rewards will be distributed to the beneficairy of the contract.
+ */
 
-contract Vault is Ownable, ERC20 {
+contract Vault {
 
-    // Initiate Lido interface
-    ILido public lidoContract;
-
-    address public rewardAddress;
-    address public vaultOwner;
-    address public harvestManager;
-    bool public emergencyMode;
+    IstETH public stETH;
+    ImpactETHtoken public imETH;
     
-    event OwnershipTransfered(address newOwner);
+    // @notice Wallet address of the beneficiary (Charity, fund, NGO, etc.)
+    address public beneficiaryAddress;
 
-    event ManagerChanged(address newManager);
+    // @notice Mapping of user's addresses and amount of ETH they have deposited to this contract (represented as imETH)
+    mapping(address => uint256) public userBalance;
 
-    constructor(address _token, address _lidoContractAddress, address _rewardAddress) ERC20("Impact ETH", "imETH") {
-
-        rewardAddress = _rewardAddress;
-        lidoContract = ILido(_lidoContractAddress);
-
-        _transferOwnership(_msgSender());
-
-        harvestManager = msg.sender;
-        emergencyMode = false;
-
+    constructor(address _stETHaddress, address _beneficiary) {
+        stETH = IstETH(_stETHaddress);
+        beneficiaryAddress = _beneficiary;
     }
 
-
-    ////////////////////////////////////
-    /// USER FUNCTIONS
-    /// https://solidity-by-example.org/defi/vault/
-    /////////////////////////////////////
-
+    /**
+        @notice This function allows users to deposit ETH to the contract. The amount of ETH deposited will be minted as imETH tokens
+     */
     function deposit() external payable {
-        _mint(msg.sender, msg.value);
+        imETH.mint(msg.sender, msg.value);
+        this.stakeToLido();
     }
 
+    /**
+        @notice This function allows users to withdraw funds from the contract. The withdrawal amount should not exceed 
+        user's initial deposit. Amount of the imETH tokens will be burned
+        @param _amountToWithdraw Amount of funds to withdraw
+     */
     function withdraw(uint _amountToWithdraw) external {
-        require((this.balanceOf(msg.sender)>= _amountToWithdraw), 'You cannot withdraw more than you deposited');
-        _burn(msg.sender, _amountToWithdraw);
-        
-        /*
-        To be done
-        token.transfer(msg.sender, _amountToWithdraw);
-        */
+        //require statement checks that _amountToWithdraw is not greater than in mapping userBalance
+        require(userBalance[msg.sender] >= _amountToWithdraw, 'You cannot withdraw more than you deposited');
+        imETH.burn(msg.sender, _amountToWithdraw);
+        stETH.transfer(msg.sender, stETH.getPooledEthByShares(_amountToWithdraw));
     }
 
+    /**
+        @notice This function allows users to stake available ETH in the contract with Lido
+     */
     function stakeToLido() external payable {
-        lidoContract.submit{value: msg.value}(rewardAddress);
+        stETH.submit{value: address(this).balance};
     }
 
+    /**
+        @notice This function calculates unharvested rewards and distributes them to the beneficiary
+    */
     function harvestRewards() external {
-        // to be done
-    }
-
-
-    ////////////////////////////////////
-    /// OWNER FUNCTIONS
-    /////////////////////////////////////
- 
- 
-    /** 
-        @notice changes the controling contract - Harvest manager
-        @param _newManager Address of the new Harvest Manager
-    */
-    function changeHarvestManager(address _newManager) public onlyOwner {
-        require(_newManager != address(0), 'Address cannot be zero address');
-        harvestManager = _newManager;
-        emit OwnershipTransfered(_newManager);
-    }
-
-    /** 
-        @notice Enables to put contract into 'Emergency mode' thus it is not possible to deposit any funds
-    */
-
-    function activateEmergency() public onlyOwner{
-        emergencyMode = true;
+        uint256 _stETHBalance = stETH.balanceOf(address(this));
+        uint256 unharvestedRewards = stETH.getPooledEthByShares(_stETHBalance);
+        require(unharvestedRewards > 0, 'No rewards to harvest');
+        stETH.transfer(beneficiaryAddress, unharvestedRewards);
+    
     }
 
     /** 
         @notice Enables to send rest of funds that are not possible to withdraw to the Harvest Manager contract
     */
-
-    function sweep() external onlyOwner {
+    function sweep() external {
 
     }
 
     // * receive function
     receive() external payable {
-        
-    }
-
-    // * fallback function
-    fallback() external payable {
-
+        imETH.mint(msg.sender, msg.value);
+        this.stakeToLido();
     }
 }
