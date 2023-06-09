@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {ILido} from './interfaces/ILido.sol';
 import {IstETH} from './interfaces/IstETH.sol';
 import {ImpactETHtoken} from './imETHtoken.sol';
 
@@ -13,8 +12,6 @@ import {ImpactETHtoken} from './imETHtoken.sol';
 
 contract Vault {
 
-    // Initiate Lido interface
-    ILido public lidoContract;
     IstETH public stETH;
     ImpactETHtoken public imETH;
     
@@ -24,8 +21,8 @@ contract Vault {
     // @notice Mapping of user's addresses and amount of ETH they have deposited to this contract (represented as imETH)
     mapping(address => uint256) public userBalance;
 
-    constructor(address _lidoContractAddress, address _beneficiary) {
-        lidoContract = ILido(_lidoContractAddress);
+    constructor(address _stETHaddress, address _beneficiary) {
+        stETH = IstETH(_stETHaddress);
         beneficiaryAddress = _beneficiary;
     }
 
@@ -53,7 +50,7 @@ contract Vault {
         @notice This function allows users to stake available ETH in the contract with Lido
      */
     function stakeToLido() external payable {
-        lidoContract.submit{value: address(this).balance};
+        stETH.submit{value: address(this).balance};
     }
 
     /**
