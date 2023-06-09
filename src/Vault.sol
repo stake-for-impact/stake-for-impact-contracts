@@ -6,29 +6,30 @@ pragma solidity ^0.8.13;
 import {Ownable} from 'openzeppelin-contracts/access/Ownable.sol'; // allows usage onlyOwner modifier
 import {ERC20} from 'openzeppelin-contracts/token/ERC20/ERC20.sol';
 import {ILido} from './interfaces/ILido.sol';
+import {IstETH} from './interfaces/IstETH.sol';
+import {HarvestManager} from './HarvestManager.sol';
 
 contract Vault is Ownable, ERC20 {
 
     // Initiate Lido interface
     ILido public lidoContract;
+    IstETH public stETH;
+    HarvestManager public harvestManager;
 
     address public rewardAddress;
     address public vaultOwner;
-    address public harvestManager;
+    address public harvestManagerAddress;
     bool public emergencyMode;
     
     event OwnershipTransfered(address newOwner);
 
     event ManagerChanged(address newManager);
 
-    constructor(address _token, address _lidoContractAddress, address _rewardAddress) ERC20("Impact ETH", "imETH") {
+    constructor(address _lidoContractAddress, address _rewardAddress, address _harvestManagerAddress) ERC20("Impact ETH", "imETH") {
 
         rewardAddress = _rewardAddress;
         lidoContract = ILido(_lidoContractAddress);
-
-        _transferOwnership(_msgSender());
-
-        harvestManager = msg.sender;
+        harvestManagerAddress = _harvestManagerAddress;
         emergencyMode = false;
 
     }
@@ -57,8 +58,17 @@ contract Vault is Ownable, ERC20 {
         lidoContract.submit{value: msg.value}(rewardAddress);
     }
 
+    /**
+        @notice This function calculates and harvester rewards and harvests them if any
+    */
     function harvestRewards() external {
-        // to be done
+
+        // Variable to store amount of unharvested rewards
+        uint256 _stETHBalance = stETH.balanceOf(address(this));
+        uint256 unharvestedRewards = stETH.getPooledEthByShares(_stETHBalance);
+        require(unharvestedRewards > 0, 'No rewards to harvest');
+        stETH.transfer(address(harvestManager), unharvestedRewards);
+    
     }
 
 
@@ -73,7 +83,7 @@ contract Vault is Ownable, ERC20 {
     */
     function changeHarvestManager(address _newManager) public onlyOwner {
         require(_newManager != address(0), 'Address cannot be zero address');
-        harvestManager = _newManager;
+        harvestManagerAddress = _newManager;
         emit OwnershipTransfered(_newManager);
     }
 
