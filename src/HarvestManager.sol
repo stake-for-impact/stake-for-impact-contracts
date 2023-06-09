@@ -30,11 +30,18 @@ contract HarvestManager is Ownable {
     /// @notice create instace of the Vault contract
     Vault vault;
 
-    /// @notice create instance of stETH contract with IERC20 interface at the address of stETH contract on the mainnet
-    IERC20 stETH = IERC20(0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84);
+    /// @notice Event fired when new beneficiary is added
+    event BeneficiaryAdded(address beneficiary, address user);
+
+    /// @notice Event fired when shares are allocated to beneficiaries;
+    event SharesAllocated(address[] _beneficiaries, uint256[] _shares);
+
+    /// @notice Event fired when shares are renounced from beneficiaries;
+    event SharesRenounced(address[] _beneficiaries, uint256[] _shares);
 
     constructor(address _vaultAddress) {
         vault = Vault(_vaultAddress);
+        IERC20 stETH = IERC20(0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84);
     }
 
     /**
@@ -42,6 +49,7 @@ contract HarvestManager is Ownable {
         * @param _beneficiary Address of the new beneficiary
     */
     function addBeneficiary(address _beneficiary) public {
+        emit BeneficiaryAdded(_beneficiary, msg.sender);
         beneficiary[_beneficiary][msg.sender] = 0;
         beneficiariesList.push(_beneficiary);
     }
@@ -54,6 +62,8 @@ contract HarvestManager is Ownable {
     function allocateShares(address[] memory _beneficiary, uint256[] memory _shares) external {
         require(_beneficiary.length == _shares.length, "HarvestManager: length of _beneficiary and _shares arrays should be equal");
         require(_beneficiary.length > 0, "HarvestManager: length of _beneficiary array should be greater than 0");
+
+        emit SharesAllocated(_beneficiary, _shares);
 
         // this for loop sums up all the shares that user has allocated to all the beneficiaries
         uint256 _totalShares = 0;
@@ -82,6 +92,8 @@ contract HarvestManager is Ownable {
     function renounceShares(address[] memory _beneficiary, uint256[] memory _shares) external {
         require(_beneficiary.length == _shares.length, "HarvestManager: length of _beneficiary and _shares arrays should be equal");
         require(_beneficiary.length > 0, "HarvestManager: length of _beneficiary array should be greater than 0");
+
+        emit SharesRenounced(_beneficiary, _shares);
 
         // this for loop sums up all the shares that user has allocated to all the beneficiaries
         uint256 _totalShares = 0;

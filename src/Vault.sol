@@ -3,32 +3,16 @@ pragma solidity ^0.8.13;
 
 // Imports of Openzeppelin security contracts
 
-import "@openzeppelin/contracts/access/Ownable.sol"; // allows usage onlyOwner modifier
+import {Ownable} from 'openzeppelin-contracts/access/Ownable.sol'; // allows usage onlyOwner modifier
+import {ERC20} from 'openzeppelin-contracts/token/ERC20/ERC20.sol';
+import {ILido} from './interfaces/ILido.sol';
 
-/*
-@notice initiating Lido interface in order use Lido staking
-**/
-
-interface ILido {
-    function submit(address _rewardAddress) external payable;
-}
-
-contract Vault is Ownable {
+contract Vault is Ownable, ERC20 {
 
     // Initiate Lido interface
     ILido public lidoContract;
 
     address public rewardAddress;
-
-    IERC20 public immutable impactETH;
-
-    // total supply of minted impactETH
-    uint public totalSupply;
-
-    // maps minted impactETH to users addresses
-    mapping(address => uint) public balanceOf;
-
-
     address public vaultOwner;
     address public harvestManager;
     bool public emergencyMode;
@@ -37,12 +21,10 @@ contract Vault is Ownable {
 
     event ManagerChanged(address newManager);
 
-    constructor(address _token, address _lidoContractAddress, address _rewardAddress) {
+    constructor(address _token, address _lidoContractAddress, address _rewardAddress) ERC20("Impact ETH", "imETH") {
 
-        rewardAddress = _rewardAddress
+        rewardAddress = _rewardAddress;
         lidoContract = ILido(_lidoContractAddress);
-
-        impactETH = IERC20(_token);
 
         _transferOwnership(_msgSender());
 
@@ -57,28 +39,12 @@ contract Vault is Ownable {
     /// https://solidity-by-example.org/defi/vault/
     /////////////////////////////////////
 
-
-    function _mint(address _to, uint _mintedAmount) private {
-        totalSupply += _mintedAmount;
-        balanceOf[_to] += _mintedAmount;
+    function deposit() external payable {
+        _mint(msg.sender, msg.value);
     }
-
-
-    function deposit(uint _amountToDeposit) external payable {
-        _mint(msg.sender, _amount);
-        token.transferFrom(msg.sender, address(this), _amount);
-    }
-
-
-    function _burn(address _from, uint _burnAmount) private {
-        totalSupply -= _burnAmount;
-        balanceOf[_from] -= _burnAmount;
-    }
-
-
 
     function withdraw(uint _amountToWithdraw) external {
-        require((token.balanceOf(address(this))>= _amountToWithdraw), 'You cannot withdraw more than you deposited');
+        require((this.balanceOf(msg.sender)>= _amountToWithdraw), 'You cannot withdraw more than you deposited');
         _burn(msg.sender, _amountToWithdraw);
         
         /*
@@ -91,7 +57,9 @@ contract Vault is Ownable {
         lidoContract.submit{value: msg.value}(rewardAddress);
     }
 
-    function harvestRewards()
+    function harvestRewards() external {
+        // to be done
+    }
 
 
     ////////////////////////////////////
@@ -101,13 +69,12 @@ contract Vault is Ownable {
  
     /** 
         @notice changes the controling contract - Harvest manager
-        @param _newManager
+        @param _newManager Address of the new Harvest Manager
     */
-
     function changeHarvestManager(address _newManager) public onlyOwner {
         require(_newManager != address(0), 'Address cannot be zero address');
         harvestManager = _newManager;
-        emit ownershipTransfered(_newOwner);
+        emit OwnershipTransfered(_newManager);
     }
 
     /** 
@@ -122,7 +89,7 @@ contract Vault is Ownable {
         @notice Enables to send rest of funds that are not possible to withdraw to the Harvest Manager contract
     */
 
-    function sweep() onlyOwner {
+    function sweep() external onlyOwner {
 
     }
 
@@ -134,28 +101,5 @@ contract Vault is Ownable {
     // * fallback function
     fallback() external payable {
 
-    }
-
-
-
-    interface IERC20 {
-    function totalSupply() external view returns (uint);
-
-    function balanceOf(address account) external view returns (uint);
-
-    function transfer(address recipient, uint amount) external returns (bool);
-
-    function allowance(address owner, address spender) external view returns (uint);
-
-    function approve(address spender, uint amount) external returns (bool);
-
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint amount
-    ) external returns (bool);
-
-    event Transfer(address indexed from, address indexed to, uint amount);
-    event Approval(address indexed owner, address indexed spender, uint amount);
     }
 }
