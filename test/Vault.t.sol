@@ -45,13 +45,32 @@ contract VaultTest is Test {
     }
 
     function testHarvest () public {
-        vault.deposit{value: 100 ether}();
+        vault.deposit{value: 10000 ether}();
         console.log("stETH balance of the vault:", stETH.balanceOf(address(vault)));
         console.log("stETH balance of the beneficiary:", stETH.balanceOf(beneficiaryAddress));
         vault.harvestRewards();
-        console.log(stETH.balanceOf(beneficiaryAddress));
+        console.log("beneficiary balance:", stETH.balanceOf(beneficiaryAddress));
+
+        vault.harvestRewards();
+        console.log("beneficiary balance:", stETH.balanceOf(beneficiaryAddress));
+
+        vault.harvestRewards();
+        console.log("beneficiary balance:", stETH.balanceOf(beneficiaryAddress));
+
+
+        console.log("beneficiary balance:", stETH.balanceOf(beneficiaryAddress));
         assertApproxEqAbs(stETH.getPooledEthByShares(stETH.balanceOf(address(vault))), imETH.totalSupply(), 1000000000);
         assertEq(vault.userBalance(address(this)), 100 ether);
         //assertEq(stETH.balanceOf(beneficiaryAddress), stETH.balanceOf(address(vault)) - stETH.getSharesByPooledEth(imETH.totalSupply()));
+    }
+
+    function testHarvest2 () public {
+        vault.deposit{value: 100 ether}();
+        console.log("stETH balance of the vault:", stETH.balanceOf(address(vault)));
+        console.log("stETH balance of the beneficiary:", stETH.balanceOf(beneficiaryAddress));
+        vault.harvestRewards2();
+        console.log("beneficiary balance:", stETH.balanceOf(beneficiaryAddress));
+        //assertApproxEqAbs(stETH.getPooledEthByShares(stETH.balanceOf(address(vault))), vault.totalETHDeposited, 1000000000);
+        //assertEq(vault.userBalance(address(this)), 100 ether);
     }
 }

@@ -22,6 +22,9 @@ contract Vault {
     // @notice Mapping of user's addresses and amount of ETH they have deposited to this contract (represented as imETH)
     mapping(address => uint256) public userBalance;
 
+    // @notice Variable that keeps track of the total amount of ETH deposited to this contract
+    uint256 public totalETHDeposited;
+
     constructor(address _stETHaddress, address _beneficiary, address _imETHaddress) {
         stETH = IstETH(_stETHaddress);
         beneficiaryAddress = _beneficiary;
@@ -35,6 +38,7 @@ contract Vault {
         imETH.mint(msg.sender, msg.value);
         this.stakeToLido();
         userBalance[msg.sender] += msg.value;
+        totalETHDeposited += msg.value;
     }
 
     /**
@@ -47,6 +51,7 @@ contract Vault {
         require(userBalance[msg.sender] >= _amountToWithdraw, 'You cannot withdraw more than you deposited');
         imETH.burn(msg.sender, _amountToWithdraw);
         userBalance[msg.sender] -= _amountToWithdraw;
+        totalETHDeposited -= _amountToWithdraw;
         stETH.transfer(msg.sender, stETH.getSharesByPooledEth(_amountToWithdraw));
     }
 
@@ -69,6 +74,17 @@ contract Vault {
         console.log("unharvested rewards:", unharvestedRewards);
         require(unharvestedRewards > 0, 'No rewards to harvest');
         stETH.transfer(beneficiaryAddress, unharvestedRewards);
+    }
+
+    function harvestRewards2() external {
+        uint256 allETH = stETH.getPooledEthByShares(stETH.balanceOf(address(this)));
+        console.log("getPooledEthByShares", stETH.getPooledEthByShares(stETH.balanceOf(address(this))));
+        console.log("stETH.balanceOf(address(this))", stETH.balanceOf(address(this)));
+
+        if (allETH > totalETHDeposited) {
+            uint256 unharvestedRewards = allETH - totalETHDeposited;
+            stETH.transfer(beneficiaryAddress, unharvestedRewards);
+        }   
     }
 
     /** 
