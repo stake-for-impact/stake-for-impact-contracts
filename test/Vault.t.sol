@@ -7,12 +7,15 @@ import {IstETH} from '../src/interfaces/IstETH.sol';
 import {ImpactETHtoken} from '../src/imETHtoken.sol';
 import {Vault} from '../src/Vault.sol';
 import {VaultFactory} from '../src/VaultFactory.sol';
+import {VaultInfo} from '../src/VaultFactory.sol';
 
 contract VaultTest is Test {
     Vault public vault;
     ImpactETHtoken public imETH;
     IstETH public stETH;
     VaultFactory public factory;
+    VaultInfo public vaultInfo;
+    address public vaultAddress;
 
     address public beneficiaryAddress;
 
@@ -23,9 +26,10 @@ contract VaultTest is Test {
         stETH = IstETH(0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84);
         factory = new VaultFactory(address(stETH));
         beneficiaryAddress = address(0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5); //random address from etherscan mainnet for testing
-        factory.createVault(beneficiaryAddress);
+        factory.createVault(beneficiaryAddress, "test", "test");
         imETH = ImpactETHtoken(factory.imEthAddress());
-        vault = Vault(payable (factory.vaults(0)));
+        (,,,vaultAddress) = factory.vaults(0);
+        vault = Vault(payable(vaultAddress));
     }
 
     function testDeposit () public {

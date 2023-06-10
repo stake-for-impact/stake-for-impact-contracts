@@ -6,6 +6,7 @@ import {ImpactETHtoken} from '../src/imETHtoken.sol';
 import {Vault} from '../src/Vault.sol';
 import {VaultFactory} from '../src/VaultFactory.sol';
 
+/**
 contract Deployment is Script {
     Vault public vault;
     ImpactETHtoken public imETH;
@@ -25,3 +26,4 @@ contract Deployment is Script {
         vm.stopBroadcast();
     }
 }
+*/
