@@ -14,10 +14,12 @@ contract VaultFactory {
     ImpactETHtoken public imEth;
     IstETH public stETH;
     address[] public vaults;
+    address public imEthAddress;
 
     constructor(address _stETH){
         stETH = IstETH(_stETH);
         imEth = new ImpactETHtoken();
+        imEthAddress = address(imEth);
     }
 
     function createVault(address _beneficiary) external {

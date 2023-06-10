@@ -34,6 +34,7 @@ contract Vault {
     function deposit() external payable {
         imETH.mint(msg.sender, msg.value);
         this.stakeToLido();
+        userBalance[msg.sender] += msg.value;
     }
 
     /**
@@ -45,7 +46,8 @@ contract Vault {
         //require statement checks that _amountToWithdraw is not greater than in mapping userBalance
         require(userBalance[msg.sender] >= _amountToWithdraw, 'You cannot withdraw more than you deposited');
         imETH.burn(msg.sender, _amountToWithdraw);
-        stETH.transfer(msg.sender, stETH.getPooledEthByShares(_amountToWithdraw));
+        userBalance[msg.sender] -= _amountToWithdraw;
+        stETH.transfer(msg.sender, stETH.getSharesByPooledEth(_amountToWithdraw));
     }
 
     /**
