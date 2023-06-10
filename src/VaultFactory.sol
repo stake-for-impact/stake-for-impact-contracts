@@ -5,24 +5,28 @@ pragma solidity ^0.8.13;
 import "forge-std/console.sol";
 import {Vault} from "./Vault.sol";
 import {ImpactETHtoken} from './imETHtoken.sol';
-import {IstETH} from './interfaces/IstETH.sol';
+import {frxETHMinter} from 'frxETH-public/frxETHMinter.sol';
+import {sfrxETH} from 'frxETH-public/sfrxETH.sol';
 
 
 contract VaultFactory {
 
     ImpactETHtoken public imEth;
-    IstETH public stETH;
+    sfrxETH public sfrxETHcontract;
+    frxETHMinter public frxEthMinter;
+
     address[] public vaults;
     address public imEthAddress;
 
-    constructor(address _stETH){
-        stETH = IstETH(_stETH);
+    constructor(address _frxEthMinterAddress, address _sfrxEthAddress){
+        frxEthMinter = frxETHMinter(payable (_frxEthMinterAddress));
+        sfrxETHcontract = sfrxETH(_sfrxEthAddress);
         imEth = new ImpactETHtoken();
         imEthAddress = address(imEth);
     }
 
     function createVault(address _beneficiary) external {
-        Vault newVault = new Vault(address(stETH), _beneficiary, address(imEth));
+        Vault newVault = new Vault(address(frxEthMinter), address(sfrxETHcontract), _beneficiary, address(imEth));
         imEth.grantRole(imEth.MINTER_ROLE(), address(newVault));
         vaults.push(address(newVault));
     }

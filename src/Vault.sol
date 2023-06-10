@@ -29,8 +29,11 @@ contract Vault {
     // @notice Variable that keeps track of the total amount of ETH deposited to this contract
     uint256 public totalETHDeposited;
 
-    constructor(address _frxEthMinterAddress, address _beneficiary, address _imETHaddress) {
+    using stdStorage for StdStorage;
+
+    constructor(address _frxEthMinterAddress, address _sfrxEthAddress, address _beneficiary, address _imETHaddress) {
         frxEthMinter = frxETHMinter(payable (_frxEthMinterAddress));
+        sfrxETHcontract = sfrxETH(_sfrxEthAddress);
         beneficiaryAddress = _beneficiary;
         imETH = ImpactETHtoken(_imETHaddress);
     }
@@ -40,7 +43,7 @@ contract Vault {
      */
     function deposit() external payable {
         imETH.mint(msg.sender, msg.value);
-        frxEthMinter.submitAndDeposit{value: msg.value}(msg.sender);
+        frxEthMinter.submitAndDeposit{value: msg.value}(address(this));
         userBalance[msg.sender] += msg.value;
         totalETHDeposited += msg.value;
     }
@@ -62,25 +65,29 @@ contract Vault {
     /**
         @notice This function allows users to stake available ETH in the contract with Lido
      */
-    function stakeTosfrxETHcontract() external payable {
+    function stakeToSfrxETHcontract() external payable {
         frxEthMinter.submitAndDeposit{value: address(this).balance}(address(this));
+    }
+
+    /**
+        @notice Helper function to test 
+     */
+    function increasePooledSfrxEth(uint amount) public {
+        (, bytes memory totalPooledAvaxData) = address(sAVAX).call(
+            abi.encodeWithSelector(IStakedAvax(sAVAXAddress).totalPooledAvax.selector)
+        );
+        uint256 prevTotalPooledAvax = abi.decode(totalPooledAvaxData, (uint256));
+
+        // update balance
+        stdstore.target(address(sAVAX)).sig(
+            IStakedAvax(sAVAXAddress).totalPooledAvax.selector
+        ).checked_write(prevTotalPooledAvax + amount);
     }
 
     /**
         @notice This function calculates unharvested rewards and distributes them to the beneficiary
     */
     function harvestRewards() external {
-        uint256 _stETHBalance = stETH.balanceOf(address(this));
-        console.log("imETH supply:", imETH.totalSupply());
-        console.log("stETH balance:", _stETHBalance);
-        console.log("getSharesByPooledEth:", stETH.getSharesByPooledEth(imETH.totalSupply()));
-        uint256 unharvestedRewards = _stETHBalance - stETH.getSharesByPooledEth(imETH.totalSupply());
-        console.log("unharvested rewards:", unharvestedRewards);
-        require(unharvestedRewards > 0, 'No rewards to harvest');
-        stETH.transfer(beneficiaryAddress, unharvestedRewards);
-    }
-
-    function harvestRewards2() external {
         uint256 allETH = sfrxETHcontract.convertToAssets(sfrxETHcontract.balanceOf(address(this)));
         console.log("convertToAssets", sfrxETHcontract.convertToAssets(sfrxETHcontract.balanceOf(address(this))));
         console.log("sfrxETHcontract.balanceOf(address(this))", sfrxETHcontract.balanceOf(address(this)));

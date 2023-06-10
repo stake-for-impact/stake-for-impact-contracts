@@ -2,3 +2,4 @@ forge-std/=lib/forge-std/src/
 openzeppelin-contracts/=lib/openzeppelin-contracts/contracts
 openzeppelin-contracts/contracts=lib/openzeppelin-contracts/contracts
 frxETH-public/=lib/frxETH-public/src
+ERC4626/=lib/ERC4626/src

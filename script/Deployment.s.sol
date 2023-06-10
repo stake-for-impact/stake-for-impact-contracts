@@ -11,7 +11,8 @@ contract Deployment is Script {
     ImpactETHtoken public imETH;
     VaultFactory public vaultFactory;
 
-    address public stEthAddress = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84; // stETH on Ethereum
+    address public frxEthMinterAddress = 0xbAFA44EFE7901E04E39Dad13167D089C559c1138;
+    address public sfrxEthAddress = 0xac3E018457B222d93114458476f3E3416Abbe38F;
     address public beneficiaryAddress = 0x717654f0E07450e47A53e6A33eE191852C47CaF8;
 
     function run() public {
@@ -19,7 +20,7 @@ contract Deployment is Script {
 
         vm.startBroadcast(deployerPrivateKey);
 
-        vaultFactory = new VaultFactory(stEthAddress);
+        vaultFactory = new VaultFactory(frxEthMinterAddress, sfrxEthAddress);
         vaultFactory.createVault(beneficiaryAddress);
 
         vm.stopBroadcast();
