@@ -7,4 +7,5 @@ interface IstETH is IERC20 {
     function getPooledEthByShares(uint256 _sharesAmount) external view returns (uint256);
     function getSharesByPooledEth(uint256 _ethAmount) external view returns (uint256);
     function submit(address _rewardAddress) external payable;
+    function sharesOf(address _account) external view returns (uint256);
 }
