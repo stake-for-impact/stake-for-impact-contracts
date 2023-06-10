@@ -43,4 +43,15 @@ contract VaultTest is Test {
         assertEq(imETH.balanceOf(address(this)), 50 ether);
         assertApproxEqAbs(stETH.balanceOf(address(vault)), stETHVaultDepositBeforeWithdraw - stETH.getSharesByPooledEth(50 ether), 100000);
     }
+
+    function testHarvest () public {
+        vault.deposit{value: 100 ether}();
+        console.log("stETH balance of the vault:", stETH.balanceOf(address(vault)));
+        console.log("stETH balance of the beneficiary:", stETH.balanceOf(beneficiaryAddress));
+        vault.harvestRewards();
+        console.log(stETH.balanceOf(beneficiaryAddress));
+        assertApproxEqAbs(stETH.getPooledEthByShares(stETH.balanceOf(address(vault))), imETH.totalSupply(), 1000000000);
+        assertEq(vault.userBalance(address(this)), 100 ether);
+        //assertEq(stETH.balanceOf(beneficiaryAddress), stETH.balanceOf(address(vault)) - stETH.getSharesByPooledEth(imETH.totalSupply()));
+    }
 }

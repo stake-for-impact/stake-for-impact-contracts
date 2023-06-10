@@ -62,10 +62,13 @@ contract Vault {
     */
     function harvestRewards() external {
         uint256 _stETHBalance = stETH.balanceOf(address(this));
-        uint256 unharvestedRewards = stETH.getPooledEthByShares(_stETHBalance);
+        console.log("imETH supply:", imETH.totalSupply());
+        console.log("stETH balance:", _stETHBalance);
+        console.log("getSharesByPooledEth:", stETH.getSharesByPooledEth(imETH.totalSupply()));
+        uint256 unharvestedRewards = _stETHBalance - stETH.getSharesByPooledEth(imETH.totalSupply());
+        console.log("unharvested rewards:", unharvestedRewards);
         require(unharvestedRewards > 0, 'No rewards to harvest');
         stETH.transfer(beneficiaryAddress, unharvestedRewards);
-    
     }
 
     /** 
