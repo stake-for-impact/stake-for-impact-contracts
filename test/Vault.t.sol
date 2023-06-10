@@ -7,12 +7,15 @@ import {IstETH} from '../src/interfaces/IstETH.sol';
 import {ImpactETHtoken} from '../src/imETHtoken.sol';
 import {Vault} from '../src/Vault.sol';
 import {VaultFactory} from '../src/VaultFactory.sol';
+import {sfrxETH} from 'frxETH-public/sfrxETH.sol';
 
 contract VaultTest is Test {
     Vault public vault;
     ImpactETHtoken public imETH;
     IstETH public stETH;
     VaultFactory public factory;
+    sfrxETH public sfrxETHcontract;
+
 
     address public beneficiaryAddress;
 
@@ -20,8 +23,8 @@ contract VaultTest is Test {
         uint256 forkId = vm.createFork("mainnet");
         vm.selectFork(forkId);
 
-        stETH = IstETH(0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84);
-        factory = new VaultFactory(address(stETH));
+        sfrxETHcontract = sfrxETH(0xac3E018457B222d93114458476f3E3416Abbe38F);
+        factory = new VaultFactory(address(sfrxETHcontract));
         beneficiaryAddress = address(0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5); //random address from etherscan mainnet for testing
         factory.createVault(beneficiaryAddress);
         imETH = ImpactETHtoken(factory.imEthAddress());
@@ -66,10 +69,10 @@ contract VaultTest is Test {
 
     function testHarvest2 () public {
         vault.deposit{value: 100 ether}();
-        console.log("stETH balance of the vault:", stETH.balanceOf(address(vault)));
-        console.log("stETH balance of the beneficiary:", stETH.balanceOf(beneficiaryAddress));
+        console.log("sfrxETH balance of the vault:", sfrxETHcontract.balanceOf(address(vault)));
+        console.log("sfrxETH balance of the beneficiary:", sfrxETHcontract.balanceOf(beneficiaryAddress));
         vault.harvestRewards2();
-        console.log("beneficiary balance:", stETH.balanceOf(beneficiaryAddress));
+        console.log("beneficiary balance:", sfrxETHcontract.balanceOf(beneficiaryAddress));
         //assertApproxEqAbs(stETH.getPooledEthByShares(stETH.balanceOf(address(vault))), vault.totalETHDeposited, 1000000000);
         //assertEq(vault.userBalance(address(this)), 100 ether);
     }

@@ -4,6 +4,8 @@ pragma solidity ^0.8.13;
 import "forge-std/console.sol";
 import {IstETH} from './interfaces/IstETH.sol';
 import {ImpactETHtoken} from './imETHtoken.sol';
+import {frxETHMinter} from 'frxETH-public/frxETHMinter.sol';
+import {sfrxETH} from 'frxETH-public/sfrxETH.sol';
 
 /**
     @title Impact Vault contract
@@ -15,6 +17,8 @@ contract Vault {
 
     IstETH public stETH;
     ImpactETHtoken public imETH;
+    frxETHMinter public frxEthMinter;
+    sfrxETH public sfrxETHcontract;
     
     // @notice Wallet address of the beneficiary (Charity, fund, NGO, etc.)
     address public beneficiaryAddress;
@@ -25,8 +29,8 @@ contract Vault {
     // @notice Variable that keeps track of the total amount of ETH deposited to this contract
     uint256 public totalETHDeposited;
 
-    constructor(address _stETHaddress, address _beneficiary, address _imETHaddress) {
-        stETH = IstETH(_stETHaddress);
+    constructor(address _frxEthMinterAddress, address _beneficiary, address _imETHaddress) {
+        frxEthMinter = frxETHMinter(payable (_frxEthMinterAddress));
         beneficiaryAddress = _beneficiary;
         imETH = ImpactETHtoken(_imETHaddress);
     }
@@ -36,7 +40,7 @@ contract Vault {
      */
     function deposit() external payable {
         imETH.mint(msg.sender, msg.value);
-        this.stakeToLido();
+        frxEthMinter.submitAndDeposit{value: msg.value}(msg.sender);
         userBalance[msg.sender] += msg.value;
         totalETHDeposited += msg.value;
     }
@@ -52,14 +56,14 @@ contract Vault {
         imETH.burn(msg.sender, _amountToWithdraw);
         userBalance[msg.sender] -= _amountToWithdraw;
         totalETHDeposited -= _amountToWithdraw;
-        stETH.transfer(msg.sender, stETH.getSharesByPooledEth(_amountToWithdraw));
+        sfrxETHcontract.transfer(msg.sender, sfrxETHcontract.convertToShares(_amountToWithdraw));
     }
 
     /**
         @notice This function allows users to stake available ETH in the contract with Lido
      */
-    function stakeToLido() external payable {
-        stETH.submit{value: address(this).balance}(address(this));
+    function stakeTosfrxETHcontract() external payable {
+        frxEthMinter.submitAndDeposit{value: address(this).balance}(address(this));
     }
 
     /**
@@ -77,13 +81,13 @@ contract Vault {
     }
 
     function harvestRewards2() external {
-        uint256 allETH = stETH.getPooledEthByShares(stETH.balanceOf(address(this)));
-        console.log("getPooledEthByShares", stETH.getPooledEthByShares(stETH.balanceOf(address(this))));
-        console.log("stETH.balanceOf(address(this))", stETH.balanceOf(address(this)));
+        uint256 allETH = sfrxETHcontract.convertToAssets(sfrxETHcontract.balanceOf(address(this)));
+        console.log("convertToAssets", sfrxETHcontract.convertToAssets(sfrxETHcontract.balanceOf(address(this))));
+        console.log("sfrxETHcontract.balanceOf(address(this))", sfrxETHcontract.balanceOf(address(this)));
 
         if (allETH > totalETHDeposited) {
             uint256 unharvestedRewards = allETH - totalETHDeposited;
-            stETH.transfer(beneficiaryAddress, unharvestedRewards);
+            sfrxETHcontract.transfer(beneficiaryAddress, unharvestedRewards);
         }   
     }
 
@@ -97,6 +101,6 @@ contract Vault {
     // * receive function
     receive() external payable {
         imETH.mint(msg.sender, msg.value);
-        this.stakeToLido();
+        //this.stakeToLido();
     }
 }
