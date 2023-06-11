@@ -67,23 +67,9 @@ contract Vault {
     */
     function harvestRewards() external {
         uint256 _totalLidoShares = stETH.sharesOf(address(this));
-        console.log("imETH supply:", imETH.totalSupply());
-        console.log("_totalLidoShares", _totalLidoShares);
         uint256 unharvestedRewards = _totalLidoShares - stETH.getSharesByPooledEth(totalBalanceEth);
-
-        console.log("imETH supply:", imETH.totalSupply());
-        console.log("_totalLidoShares", _totalLidoShares);
-        console.log("getSharesByPooledEth:", stETH.getSharesByPooledEth(imETH.totalSupply()));
-        console.log("unharvested rewards:", unharvestedRewards);
         require(unharvestedRewards > 0, 'No rewards to harvest');
-        stETH.transfer(beneficiaryAddress, unharvestedRewards);
-    }
-
-    /** 
-        @notice Enables to send rest of funds that are not possible to withdraw to the Harvest Manager contract
-    */
-    function sweep() external {
-
+        stETH.transfer(beneficiaryAddress, stETH.getPooledEthByShares(unharvestedRewards));
     }
 
     // * receive function

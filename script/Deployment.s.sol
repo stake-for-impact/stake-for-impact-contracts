@@ -6,14 +6,13 @@ import {ImpactETHtoken} from '../src/imETHtoken.sol';
 import {Vault} from '../src/Vault.sol';
 import {VaultFactory} from '../src/VaultFactory.sol';
 
-/**
 contract Deployment is Script {
     Vault public vault;
     ImpactETHtoken public imETH;
     VaultFactory public vaultFactory;
 
     address public stEthAddress = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84; // stETH on Ethereum
-    address public beneficiaryAddress = 0x717654f0E07450e47A53e6A33eE191852C47CaF8;
+    address public beneficiaryAddress = 0x717654f0E07450e47A53e6A33eE191852C47CaF8; //
 
     function run() public {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
@@ -21,9 +20,8 @@ contract Deployment is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         vaultFactory = new VaultFactory(stEthAddress);
-        vaultFactory.createVault(beneficiaryAddress);
+        vaultFactory.createVault(beneficiaryAddress, "GenesisVault", "This is a Genesis Vault, you can stake with it if want to support the project");
 
         vm.stopBroadcast();
     }
 }
-*/
