@@ -19,6 +19,9 @@ contract Vault {
     // @notice Wallet address of the beneficiary (Charity, fund, NGO, etc.)
     address public beneficiaryAddress;
 
+    // @notice Total amount of ETH deposited to this contract
+    uint256 public totalBalanceEth;
+
     // @notice Mapping of user's addresses and amount of ETH they have deposited to this contract (represented as imETH)
     mapping(address => uint256) public userBalance;
 
@@ -35,6 +38,7 @@ contract Vault {
         imETH.mint(msg.sender, msg.value);
         this.stakeToLido();
         userBalance[msg.sender] += msg.value;
+        totalBalanceEth += msg.value;
     }
 
     /**
@@ -47,6 +51,7 @@ contract Vault {
         require(userBalance[msg.sender] >= _amountToWithdraw, 'You cannot withdraw more than you deposited');
         imETH.burn(msg.sender, _amountToWithdraw);
         userBalance[msg.sender] -= _amountToWithdraw;
+        totalBalanceEth -= _amountToWithdraw;
         stETH.transfer(msg.sender, stETH.getSharesByPooledEth(_amountToWithdraw));
     }
 
@@ -61,21 +66,10 @@ contract Vault {
         @notice This function calculates unharvested rewards and distributes them to the beneficiary
     */
     function harvestRewards() external {
-        uint256 _stETHBalance = stETH.balanceOf(address(this));
-        console.log("imETH supply:", imETH.totalSupply());
-        console.log("stETH balance:", _stETHBalance);
-        console.log("getSharesByPooledEth:", stETH.getSharesByPooledEth(imETH.totalSupply()));
-        uint256 unharvestedRewards = _stETHBalance - stETH.getSharesByPooledEth(imETH.totalSupply());
-        console.log("unharvested rewards:", unharvestedRewards);
+        uint256 _totalLidoShares = stETH.sharesOf(address(this));
+        uint256 unharvestedRewards = _totalLidoShares - stETH.getSharesByPooledEth(totalBalanceEth);
         require(unharvestedRewards > 0, 'No rewards to harvest');
-        stETH.transfer(beneficiaryAddress, unharvestedRewards);
-    }
-
-    /** 
-        @notice Enables to send rest of funds that are not possible to withdraw to the Harvest Manager contract
-    */
-    function sweep() external {
-
+        stETH.transfer(beneficiaryAddress, stETH.getPooledEthByShares(unharvestedRewards));
     }
 
     // * receive function
