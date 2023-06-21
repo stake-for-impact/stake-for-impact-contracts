@@ -1,0 +1,1 @@
+forge script script/Deployment.s.sol:Deployment --chain-id 11155111 --etherscan-api-key $ETHERSCAN_API_KEY --verify --broadcast -vvvv --rpc-url $SEPOLIA_RPC --private-key $PRIVATE_KEY

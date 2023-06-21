@@ -20,7 +20,7 @@ contract Deployment is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         vaultFactory = new VaultFactory(stEthAddress);
-        vaultFactory.createVault(beneficiaryAddress, "GenesisVault", "This is a Genesis Vault, you can stake with it if want to support the project");
+        vaultFactory.createVault(beneficiaryAddress, "TestVault", "This is a test vault and factory of Stake for Impact system");
 
         vm.stopBroadcast();
     }
