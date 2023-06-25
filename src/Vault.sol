@@ -29,6 +29,18 @@ contract Vault is Ownable {
     // @notice Boolean variable that indicates if the contract is active or not
     bool public isContractActive;
 
+    // @notice Event that is emitted when a new user deposits ETH to the contract
+    event Deposit(address indexed user, uint256 amount);
+
+    // @notice Event that is emitted when a user withdraws ETH from the contract
+    event Withdraw(address indexed user, uint256 amount);
+
+    // @notice Event that is emitted when sktakeToLido function is called
+    event StakeToLido(uint256 amount);
+
+    // @notice Event that is emitted when rewardsa re harvested
+    event HarvestRewards(uint256 amount);
+
     constructor(address _stETHaddress, address _beneficiary, address _imETHaddress) {
         stETH = IstETH(_stETHaddress);
         beneficiaryAddress = _beneficiary;
@@ -45,6 +57,7 @@ contract Vault is Ownable {
         this.stakeToLido();
         userBalance[msg.sender] += msg.value;
         totalDepositedEth += msg.value;
+        emit Deposit(msg.sender, msg.value);
     }
 
     /**
@@ -59,6 +72,7 @@ contract Vault is Ownable {
         userBalance[msg.sender] -= _amountToWithdraw;
         totalDepositedEth -= _amountToWithdraw;
         stETH.transfer(msg.sender, stETH.getSharesByPooledEth(_amountToWithdraw));
+        emit Withdraw(msg.sender, _amountToWithdraw);
     }
 
     /**
@@ -66,6 +80,7 @@ contract Vault is Ownable {
      */
     function stakeToLido() external payable {
         require(isContractActive, 'Contract is paused');
+        emit StakeToLido(address(this).balance);
         stETH.submit{value: address(this).balance}(address(this));
     }
 
@@ -78,6 +93,7 @@ contract Vault is Ownable {
         uint256 unharvestedRewards = _totalLidoShares - stETH.getSharesByPooledEth(totalDepositedEth);
         require(unharvestedRewards > 0, 'No rewards to harvest');
         stETH.transfer(beneficiaryAddress, stETH.getPooledEthByShares(unharvestedRewards));
+        emit HarvestRewards(unharvestedRewards);
     }
 
     /**
