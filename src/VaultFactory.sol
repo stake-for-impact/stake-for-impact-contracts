@@ -7,7 +7,7 @@ import {Vault} from "./Vault.sol";
 import {ImpactETHtoken} from "./imETHtoken.sol";
 import {IstETH} from "./interfaces/IstETH.sol";
 import {Ownable} from 'openzeppelin-contracts/access/Ownable.sol';
-
+import {Pausable} from 'openzeppelin-contracts/security/Pausable.sol';
 
 struct VaultInfo {
     string name;
@@ -16,7 +16,7 @@ struct VaultInfo {
     address vaultAddress;
 }
 
-contract VaultFactory is Ownable {
+contract VaultFactory is Ownable, Pausable {
 
     // @notice Instance of the ImpactETHtoken contract
     ImpactETHtoken public imEth;
@@ -50,7 +50,7 @@ contract VaultFactory is Ownable {
         address _beneficiary,
         string memory name,
         string memory description
-    ) external {
+    ) external whenNotPaused {
         Vault newVault = new Vault(
             address(stETH),
             _beneficiary,
@@ -66,22 +66,10 @@ contract VaultFactory is Ownable {
         vaults.push(newVaultInfo);
     }
 
-
+    /**
+        @notice Returns a number of vaults created
+    */
     function vaultsNumber() external view returns (uint) {
         return vaults.length;
-    }
-
-    /**
-        @notice This function allows to pause the contract, when enabled, only withdrawals are possible, no deposits
-    */
-    function pauseContract() external onlyOwner {
-        isContractActive = false;
-    }
-
-    /**
-        @notice This function allows to unpause the contract, when enabled, deposits are possible
-    */
-    function unpauseContract() external onlyOwner {
-        isContractActive = true;
     }
 }

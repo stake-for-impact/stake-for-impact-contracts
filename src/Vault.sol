@@ -5,6 +5,7 @@ import "forge-std/console.sol";
 import {IstETH} from './interfaces/IstETH.sol';
 import {ImpactETHtoken} from './imETHtoken.sol';
 import {Ownable} from 'openzeppelin-contracts/access/Ownable.sol';
+import {Pausable} from 'openzeppelin-contracts/security/Pausable.sol';
 
 /**
     @title Impact Vault contract
@@ -12,7 +13,7 @@ import {Ownable} from 'openzeppelin-contracts/access/Ownable.sol';
     The staking rewards will be distributed to the beneficairy of the contract.
  */
 
-contract Vault is Ownable {
+contract Vault is Ownable, Pausable {
 
     IstETH public stETH;
     ImpactETHtoken public imETH;
@@ -25,9 +26,6 @@ contract Vault is Ownable {
 
     // @notice Mapping of user's addresses and amount of ETH they have deposited to this contract (represented as imETH)
     mapping(address => uint256) public userBalance;
-
-    // @notice Boolean variable that indicates if the contract is active or not
-    bool public isContractActive;
 
     // @notice Event that is emitted when a new user deposits ETH to the contract
     event Deposit(address indexed user, uint256 amount);
@@ -45,14 +43,12 @@ contract Vault is Ownable {
         stETH = IstETH(_stETHaddress);
         beneficiaryAddress = _beneficiary;
         imETH = ImpactETHtoken(_imETHaddress);
-        isContractActive = true;
     }
 
     /**
         @notice This function allows users to deposit ETH to the contract. The amount of ETH deposited will be minted as imETH tokens
      */
-    function deposit() external payable {
-        require(isContractActive, 'Contract is paused');
+    function deposit() external payable whenNotPaused {
         imETH.mint(msg.sender, msg.value);
         this.stakeToLido();
         userBalance[msg.sender] += msg.value;
@@ -78,8 +74,7 @@ contract Vault is Ownable {
     /**
         @notice This function allows users to stake available ETH in the contract with Lido
      */
-    function stakeToLido() external payable {
-        require(isContractActive, 'Contract is paused');
+    function stakeToLido() external payable whenNotPaused {
         emit StakeToLido(address(this).balance);
         stETH.submit{value: address(this).balance}(address(this));
     }
@@ -87,27 +82,12 @@ contract Vault is Ownable {
     /**
         @notice This function calculates unharvested rewards and distributes them to the beneficiary
     */
-    function harvestRewards() external {
-        require(isContractActive, 'Contract is paused');
+    function harvestRewards() external whenNotPaused {
         uint256 _totalLidoShares = stETH.sharesOf(address(this));
         uint256 unharvestedRewards = _totalLidoShares - stETH.getSharesByPooledEth(totalDepositedEth);
         require(unharvestedRewards > 0, 'No rewards to harvest');
         stETH.transfer(beneficiaryAddress, stETH.getPooledEthByShares(unharvestedRewards));
         emit HarvestRewards(unharvestedRewards);
-    }
-
-    /**
-        @notice This function allows to pause the contract, when enabled, only withdrawals are possible, no deposits
-    */
-    function pauseContract() external onlyOwner {
-        isContractActive = false;
-    }
-
-    /**
-        @notice This function allows to unpause the contract, when enabled, deposits are possible
-    */
-    function unpauseContract() external onlyOwner {
-        isContractActive = true;
     }
 
     /**
