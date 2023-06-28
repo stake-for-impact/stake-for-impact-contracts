@@ -1,8 +1,8 @@
 # VaultFactory
-[Git Source](https://github.com/stake-for-impact/stake-for-impact-contracts/blob/34f949c11ae27916b9e458099dad829ed45a3068/src/VaultFactory.sol)
+[Git Source](https://github.com/stake-for-impact/stake-for-impact-contracts/blob/695b7bcd51b692b533a2b354bd5483ff5163fb9b/src/VaultFactory.sol)
 
 **Inherits:**
-Ownable
+Ownable, Pausable
 
 
 ## State Variables
@@ -55,7 +55,7 @@ This function allows to create a new vault
 
 
 ```solidity
-function createVault(address _beneficiary, string memory name, string memory description) external;
+function createVault(address _beneficiary, string memory name, string memory description) external whenNotPaused;
 ```
 **Parameters**
 
@@ -68,26 +68,10 @@ function createVault(address _beneficiary, string memory name, string memory des
 
 ### vaultsNumber
 
+Returns a number of vaults created
+
 
 ```solidity
 function vaultsNumber() external view returns (uint256);
-```
-
-### pauseContract
-
-This function allows to pause the contract, when enabled, only withdrawals are possible, no deposits
-
-
-```solidity
-function pauseContract() external onlyOwner;
-```
-
-### unpauseContract
-
-This function allows to unpause the contract, when enabled, deposits are possible
-
-
-```solidity
-function unpauseContract() external onlyOwner;
 ```
 

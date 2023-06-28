@@ -1,8 +1,8 @@
 # Vault
-[Git Source](https://github.com/stake-for-impact/stake-for-impact-contracts/blob/34f949c11ae27916b9e458099dad829ed45a3068/src/Vault.sol)
+[Git Source](https://github.com/stake-for-impact/stake-for-impact-contracts/blob/695b7bcd51b692b533a2b354bd5483ff5163fb9b/src/Vault.sol)
 
 **Inherits:**
-Ownable
+Ownable, Pausable
 
 Users can deposit ETH to this contract, that will be staked with Lido.
 The staking rewards will be distributed to the beneficairy of the contract.
@@ -44,13 +44,6 @@ mapping(address => uint256) public userBalance;
 ```
 
 
-### isContractActive
-
-```solidity
-bool public isContractActive;
-```
-
-
 ## Functions
 ### constructor
 
@@ -65,7 +58,7 @@ This function allows users to deposit ETH to the contract. The amount of ETH dep
 
 
 ```solidity
-function deposit() external payable;
+function deposit() external payable whenNotPaused;
 ```
 
 ### withdraw
@@ -90,7 +83,7 @@ This function allows users to stake available ETH in the contract with Lido
 
 
 ```solidity
-function stakeToLido() external payable;
+function stakeToLido() external payable whenNotPaused;
 ```
 
 ### harvestRewards
@@ -99,25 +92,7 @@ This function calculates unharvested rewards and distributes them to the benefic
 
 
 ```solidity
-function harvestRewards() external;
-```
-
-### pauseContract
-
-This function allows to pause the contract, when enabled, only withdrawals are possible, no deposits
-
-
-```solidity
-function pauseContract() external onlyOwner;
-```
-
-### unpauseContract
-
-This function allows to unpause the contract, when enabled, deposits are possible
-
-
-```solidity
-function unpauseContract() external onlyOwner;
+function harvestRewards() external whenNotPaused;
 ```
 
 ### transferResidues
