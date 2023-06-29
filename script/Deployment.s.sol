@@ -11,7 +11,7 @@ contract Deployment is Script {
     ImpactETHtoken public imETH;
     VaultFactory public vaultFactory;
 
-    address public stEthAddress = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84; // stETH on Ethereum
+    address public stEthAddress = 0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F; // stETH on Ethereum
     address public beneficiaryAddress = 0x717654f0E07450e47A53e6A33eE191852C47CaF8; //
 
     function run() public {
@@ -20,7 +20,7 @@ contract Deployment is Script {
         vm.startBroadcast(deployerPrivateKey);
 
         vaultFactory = new VaultFactory(stEthAddress);
-        vaultFactory.createVault(beneficiaryAddress, "GenesisVault", "This is a Genesis Vault, you can stake with it if want to support the project");
+        vaultFactory.createVault(beneficiaryAddress, "TestVault", "This is a test vault and factory of Stake for Impact system");
 
         vm.stopBroadcast();
     }

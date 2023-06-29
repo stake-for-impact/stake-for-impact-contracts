@@ -1,0 +1,1 @@
+forge script script/Deployment.s.sol:Deployment --chain-id 5 --etherscan-api-key $ETHERSCAN_API_KEY --verify --broadcast -vvvv --rpc-url $GOERLI_RPC --private-key $PRIVATE_KEY
