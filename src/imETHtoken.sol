@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "openzeppelin-contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "openzeppelin-contracts/access/AccessControl.sol";
+import {TimelockController} from "openzeppelin-contracts/governance/TimelockController.sol";
 
 /**
     * @title Impact ETH token
@@ -14,10 +15,37 @@ import "openzeppelin-contracts/access/AccessControl.sol";
 
 contract ImpactETHtoken is ERC20, ERC20Burnable, AccessControl {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant FACTORY_ROLE = keccak256("FACTORY_ROLE");
+
+    /**
+        * @notice Event emitted when tokens are minted
+        * @param to address to mint tokens to
+        * @param amount amount of tokens to mint
+    */
+    event Mint(address indexed to, uint256 amount);
+
+    /**
+        * @notice Event emitted when tokens are burned
+        * @param from address to burn tokens from
+        * @param amount amount of tokens to burn
+     */
+    event Burn(address indexed from, uint256 amount);
+
+    /**
+        * @notice Event emitted when MINTER_ROLE is granted to an address
+        * @param account address MINTER_ROLE is granted to
+         */
+    event MinterRoleGranted(address indexed account);
+
+    /**
+        * @notice Event emitted when MINTER_ROLE is revoked from an address
+        * @param account address MINTER_ROLE is revoked from
+    */
+    event MinterRoleRevoked(address indexed account);
+
 
     constructor() ERC20("Impact ETH", "imETH") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(MINTER_ROLE, msg.sender);
     }
 
     /**
@@ -25,9 +53,10 @@ contract ImpactETHtoken is ERC20, ERC20Burnable, AccessControl {
         for Impact protocol.
         * @param to address to mint tokens to
         * @param amount amount of tokens to mint
-     */
+    */
     function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) {
         _mint(to, amount);
+        emit Mint(to, amount);
     }
 
     /**
@@ -38,5 +67,24 @@ contract ImpactETHtoken is ERC20, ERC20Burnable, AccessControl {
      */
     function burn(address from, uint256 amount) public onlyRole(MINTER_ROLE) {
         _burn(from, amount);
+        emit Burn(from, amount);
+    }
+
+    /** 
+        * @notice Function that allows DEFAULT_AD<IN_ROLE to grant MINTER_ROLE to other addresses
+        * @param account address to grant MINTER_ROLE to
+    */
+    function grantMinterRole(address account) public onlyRole(DEFAULT_ADMIN_ROLE) onlyRole(FACTORY_ROLE) {
+        _grantRole(MINTER_ROLE, account);
+        emit MinterRoleGranted(account);
+    }
+
+    /**
+        * @notice Function that allows DEFAULT_ADMIN_ROLE to revoke MINTER_ROLE from other addresses
+        * @param account address to revoke MINTER_ROLE from
+    */
+    function revokeMinterRole(address account) public onlyRole(DEFAULT_ADMIN_ROLE) onlyRole(FACTORY_ROLE) {
+        _revokeRole(MINTER_ROLE, account);
+        emit MinterRoleRevoked(account);
     }
 }

@@ -33,11 +33,9 @@ contract VaultFactory is Ownable, Pausable {
     // @notice Boolean variable that indicates if the contract is active or not
     bool public isContractActive;
 
-    constructor(address _stETH) {
+    constructor(address _stETH, address _imETH) {
         stETH = IstETH(_stETH);
-        imEth = new ImpactETHtoken();
-        imEthAddress = address(imEth);
-        isContractActive = true;
+        imEthAddress = address(_imETH);
     }
 
     /**
