@@ -18,7 +18,7 @@ contract ImpactETHtoken is ERC20, ERC20Burnable, AccessControl {
     bytes32 public constant FACTORY_ROLE = keccak256("FACTORY_ROLE");
 
     constructor() ERC20("Impact ETH", "imETH") {
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     /**
@@ -45,7 +45,7 @@ contract ImpactETHtoken is ERC20, ERC20Burnable, AccessControl {
         * @notice Function that allows DEFAULT_AD<IN_ROLE to grant MINTER_ROLE to other addresses
         * @param account address to grant MINTER_ROLE to
     */
-    function grantMinterRole(address account) public onlyRole(DEFAULT_ADMIN_ROLE) onlyRole(FACTORY_ROLE) {
+    function grantMinterRole(address account) public onlyRole(FACTORY_ROLE) {
         _grantRole(MINTER_ROLE, account);
     }
 
@@ -53,7 +53,7 @@ contract ImpactETHtoken is ERC20, ERC20Burnable, AccessControl {
         * @notice Function that allows DEFAULT_ADMIN_ROLE to revoke MINTER_ROLE from other addresses
         * @param account address to revoke MINTER_ROLE from
     */
-    function revokeMinterRole(address account) public onlyRole(DEFAULT_ADMIN_ROLE) onlyRole(FACTORY_ROLE) {
+    function revokeMinterRole(address account) public onlyRole(FACTORY_ROLE) {
         _revokeRole(MINTER_ROLE, account);
     }
 }

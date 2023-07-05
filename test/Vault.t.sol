@@ -16,18 +16,21 @@ contract VaultTest is Test {
     VaultFactory public factory;
     VaultInfo public vaultInfo;
     address public vaultAddress;
+    bytes32 public FACTORY_ROLE;
 
     address public beneficiaryAddress;
 
     function setUp() public {
         uint256 forkId = vm.createFork("mainnet");
         vm.selectFork(forkId);
-
         stETH = IstETH(0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84);
-        factory = new VaultFactory(address(stETH));
+        imETH = new ImpactETHtoken();
+        factory = new VaultFactory(address(stETH), address(imETH));
+        imETH.grantRole(imETH.FACTORY_ROLE(), address(factory));
+        console.log("Facory address:", address(factory));
+        console.log("Does factory has role?", imETH.hasRole(FACTORY_ROLE, address(factory)));
         beneficiaryAddress = address(0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5); //random address from etherscan mainnet for testing
         factory.createVault(beneficiaryAddress, "test", "test");
-        imETH = ImpactETHtoken(factory.imEthAddress());
         (,,,vaultAddress) = factory.vaults(0);
         vault = Vault(payable(vaultAddress));
     }
