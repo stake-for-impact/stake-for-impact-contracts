@@ -6,7 +6,6 @@ import "forge-std/console.sol";
 import {Vault} from "./Vault.sol";
 import {ImpactETHtoken} from "./imETHtoken.sol";
 import {IstETH} from "./interfaces/IstETH.sol";
-import {Ownable} from 'openzeppelin-contracts/access/Ownable.sol';
 import {Pausable} from 'openzeppelin-contracts/security/Pausable.sol';
 
 struct VaultInfo {
@@ -16,10 +15,10 @@ struct VaultInfo {
     address vaultAddress;
 }
 
-contract VaultFactory is Ownable, Pausable {
+contract VaultFactory is Pausable {
 
     // @notice Instance of the ImpactETHtoken contract
-    ImpactETHtoken public imEth;
+    ImpactETHtoken public imETH;
 
     // @notice Instance of the stETH contract
     IstETH public stETH;
@@ -36,6 +35,7 @@ contract VaultFactory is Ownable, Pausable {
     constructor(address _stETH, address _imETH) {
         stETH = IstETH(_stETH);
         imEthAddress = address(_imETH);
+        imETH = ImpactETHtoken(_imETH);
     }
 
     /**
@@ -52,9 +52,9 @@ contract VaultFactory is Ownable, Pausable {
         Vault newVault = new Vault(
             address(stETH),
             _beneficiary,
-            address(imEth)
+            address(imETH)
         );
-        imEth.grantRole(imEth.MINTER_ROLE(), address(newVault));
+        imETH.grantMinterRole(address(newVault));
         VaultInfo memory newVaultInfo = VaultInfo(
             name,
             description,

@@ -19,7 +19,8 @@ contract Deployment is Script {
 
         vm.startBroadcast(deployerPrivateKey);
 
-        vaultFactory = new VaultFactory(stEthAddress);
+        imETH = new ImpactETHtoken();
+        vaultFactory = new VaultFactory(stEthAddress, address(imETH));
         vaultFactory.createVault(beneficiaryAddress, "TestVault", "This is a test vault and factory of Stake for Impact system");
 
         vm.stopBroadcast();

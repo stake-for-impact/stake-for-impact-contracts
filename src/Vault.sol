@@ -4,7 +4,6 @@ pragma solidity ^0.8.13;
 import "forge-std/console.sol";
 import {IstETH} from './interfaces/IstETH.sol';
 import {ImpactETHtoken} from './imETHtoken.sol';
-import {Ownable} from 'openzeppelin-contracts/access/Ownable.sol';
 import {Pausable} from 'openzeppelin-contracts/security/Pausable.sol';
 
 /**
@@ -13,7 +12,7 @@ import {Pausable} from 'openzeppelin-contracts/security/Pausable.sol';
     The staking rewards will be distributed to the beneficairy of the contract.
  */
 
-contract Vault is Ownable, Pausable {
+contract Vault is Pausable {
 
     IstETH public stETH;
     ImpactETHtoken public imETH;
@@ -94,7 +93,7 @@ contract Vault is Ownable, Pausable {
         @notice This function allows to transfer residues of stETH to the beneficiary, when all depositors 
         have withdrawn their stakes.
     */
-    function transferResidues() external onlyOwner {
+    function transferResidues() external {
         require(this.totalDepositedEth() == 0, 'There are still depositors');
         stETH.transfer(beneficiaryAddress, stETH.sharesOf(address(this)));
     }

@@ -17,33 +17,6 @@ contract ImpactETHtoken is ERC20, ERC20Burnable, AccessControl {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant FACTORY_ROLE = keccak256("FACTORY_ROLE");
 
-    /**
-        * @notice Event emitted when tokens are minted
-        * @param to address to mint tokens to
-        * @param amount amount of tokens to mint
-    */
-    event Mint(address indexed to, uint256 amount);
-
-    /**
-        * @notice Event emitted when tokens are burned
-        * @param from address to burn tokens from
-        * @param amount amount of tokens to burn
-     */
-    event Burn(address indexed from, uint256 amount);
-
-    /**
-        * @notice Event emitted when MINTER_ROLE is granted to an address
-        * @param account address MINTER_ROLE is granted to
-         */
-    event MinterRoleGranted(address indexed account);
-
-    /**
-        * @notice Event emitted when MINTER_ROLE is revoked from an address
-        * @param account address MINTER_ROLE is revoked from
-    */
-    event MinterRoleRevoked(address indexed account);
-
-
     constructor() ERC20("Impact ETH", "imETH") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
@@ -56,7 +29,6 @@ contract ImpactETHtoken is ERC20, ERC20Burnable, AccessControl {
     */
     function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) {
         _mint(to, amount);
-        emit Mint(to, amount);
     }
 
     /**
@@ -67,7 +39,6 @@ contract ImpactETHtoken is ERC20, ERC20Burnable, AccessControl {
      */
     function burn(address from, uint256 amount) public onlyRole(MINTER_ROLE) {
         _burn(from, amount);
-        emit Burn(from, amount);
     }
 
     /** 
@@ -76,7 +47,6 @@ contract ImpactETHtoken is ERC20, ERC20Burnable, AccessControl {
     */
     function grantMinterRole(address account) public onlyRole(DEFAULT_ADMIN_ROLE) onlyRole(FACTORY_ROLE) {
         _grantRole(MINTER_ROLE, account);
-        emit MinterRoleGranted(account);
     }
 
     /**
@@ -85,6 +55,5 @@ contract ImpactETHtoken is ERC20, ERC20Burnable, AccessControl {
     */
     function revokeMinterRole(address account) public onlyRole(DEFAULT_ADMIN_ROLE) onlyRole(FACTORY_ROLE) {
         _revokeRole(MINTER_ROLE, account);
-        emit MinterRoleRevoked(account);
     }
 }
