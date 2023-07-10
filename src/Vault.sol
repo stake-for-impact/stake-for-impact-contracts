@@ -55,8 +55,8 @@ contract Vault is Pausable {
     }
 
     /**
-        @notice This function allows users to withdraw funds from the contract. The withdrawal amount should not exceed 
-        user's initial deposit. Amount of the imETH tokens will be burned
+        @notice This function allows users to withdraw funds from the contract. Fractional withdrawals are not supported. User can withdraw the full 
+        amount deposited and imNFT associated with the deposit will be burned
         @param tokenId Token ID of the imNFT token user wants to withdraw
      */
     function withdraw(uint256 tokenId) external {
