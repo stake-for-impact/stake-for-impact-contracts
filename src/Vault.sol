@@ -3,8 +3,9 @@ pragma solidity ^0.8.13;
 
 import "forge-std/console.sol";
 import {IstETH} from './interfaces/IstETH.sol';
-import {ImpactETHtoken} from './imETHtoken.sol';
+import {StakeForImpactNFT} from './imNFT.sol';
 import {Pausable} from 'openzeppelin-contracts/security/Pausable.sol';
+import {NFTinfo} from './imNFT.sol';
 
 /**
     @title Impact Vault contract
@@ -15,7 +16,7 @@ import {Pausable} from 'openzeppelin-contracts/security/Pausable.sol';
 contract Vault is Pausable {
 
     IstETH public stETH;
-    ImpactETHtoken public imETH;
+    StakeForImpactNFT public imNFT;
     
     // @notice Wallet address of the beneficiary (Charity, fund, NGO, etc.)
     address public beneficiaryAddress;
@@ -23,14 +24,12 @@ contract Vault is Pausable {
     // @notice Total amount of ETH deposited to this contract
     uint256 public totalDepositedEth;
 
-    // @notice Mapping of user's addresses and amount of ETH they have deposited to this contract (represented as imETH)
-    mapping(address => uint256) public userBalance;
 
     // @notice Event that is emitted when a new user deposits ETH to the contract
-    event Deposit(address indexed user, uint256 amount);
+    event Deposit(address indexed user, uint256 amount, uint256 tokenId);
 
     // @notice Event that is emitted when a user withdraws ETH from the contract
-    event Withdraw(address indexed user, uint256 amount);
+    event Withdraw(address indexed user, uint256 amount, uint256 tokenId);
 
     // @notice Event that is emitted when sktakeToLido function is called
     event StakeToLido(uint256 amount);
@@ -38,36 +37,36 @@ contract Vault is Pausable {
     // @notice Event that is emitted when rewardsa re harvested
     event HarvestRewards(uint256 amount);
 
-    constructor(address _stETHaddress, address _beneficiary, address _imETHaddress) {
+    constructor(address _stETHaddress, address _beneficiary, address _imNFTaddress) {
         stETH = IstETH(_stETHaddress);
         beneficiaryAddress = _beneficiary;
-        imETH = ImpactETHtoken(_imETHaddress);
+        imNFT = StakeForImpactNFT(_imNFTaddress);
     }
 
     /**
         @notice This function allows users to deposit ETH to the contract. The amount of ETH deposited will be minted as imETH tokens
      */
-    function deposit() external payable whenNotPaused {
-        imETH.mint(msg.sender, msg.value);
+    function deposit() external payable whenNotPaused returns(uint256) {
+        uint256 tokenId = imNFT.safeMint(msg.sender, address(this), msg.value);
         this.stakeToLido();
-        userBalance[msg.sender] += msg.value;
         totalDepositedEth += msg.value;
-        emit Deposit(msg.sender, msg.value);
+        emit Deposit(msg.sender, msg.value, tokenId);
+        return tokenId;
     }
 
     /**
         @notice This function allows users to withdraw funds from the contract. The withdrawal amount should not exceed 
         user's initial deposit. Amount of the imETH tokens will be burned
-        @param _amountToWithdraw Amount of funds to withdraw
+        @param tokenId Token ID of the imNFT token user wants to withdraw
      */
-    function withdraw(uint _amountToWithdraw) external {
-        //require statement checks that _amountToWithdraw is not greater than in mapping userBalance
-        require(userBalance[msg.sender] >= _amountToWithdraw, 'You cannot withdraw more than you deposited');
-        imETH.burn(msg.sender, _amountToWithdraw);
-        userBalance[msg.sender] -= _amountToWithdraw;
-        totalDepositedEth -= _amountToWithdraw;
-        stETH.transfer(msg.sender, stETH.getSharesByPooledEth(_amountToWithdraw));
-        emit Withdraw(msg.sender, _amountToWithdraw);
+    function withdraw(uint256 tokenId) external {
+        require(imNFT.ownerOf(tokenId) == msg.sender, 'You are not the owner of this NFT');
+        NFTinfo memory nftInfo = imNFT.getTokenDetails(tokenId);
+        uint256 _ETHtoWithdraw = nftInfo.depositAmount;
+        totalDepositedEth -= _ETHtoWithdraw;
+        imNFT.burn(tokenId);
+        stETH.transferShares(msg.sender, stETH.getSharesByPooledEth(_ETHtoWithdraw));
+        emit Withdraw(msg.sender, _ETHtoWithdraw, tokenId);
     }
 
     /**
@@ -100,7 +99,7 @@ contract Vault is Pausable {
 
     // * receive function
     receive() external payable {
-        imETH.mint(msg.sender, msg.value);
-        this.stakeToLido();
+            imNFT.safeMint(msg.sender, address(this), msg.value);(msg.sender, msg.value);
+            this.stakeToLido();
     }
 }

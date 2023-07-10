@@ -2,13 +2,13 @@
 pragma solidity ^0.8.13;
 
 import {Script} from 'forge-std/Script.sol';
-import {ImpactETHtoken} from '../src/imETHtoken.sol';
+import {StakeForImpactNFT} from '../src/imNFT.sol';
 import {Vault} from '../src/Vault.sol';
 import {VaultFactory} from '../src/VaultFactory.sol';
 
 contract Deployment is Script {
     Vault public vault;
-    ImpactETHtoken public imETH;
+    StakeForImpactNFT public imNFT;
     VaultFactory public vaultFactory;
 
     address public stEthAddress = 0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F; // stETH on Ethereum
@@ -19,8 +19,8 @@ contract Deployment is Script {
 
         vm.startBroadcast(deployerPrivateKey);
 
-        imETH = new ImpactETHtoken();
-        vaultFactory = new VaultFactory(stEthAddress, address(imETH));
+        imNFT = new StakeForImpactNFT();
+        vaultFactory = new VaultFactory(stEthAddress, address(imNFT));
         vaultFactory.createVault(beneficiaryAddress, "TestVault", "This is a test vault and factory of Stake for Impact system");
 
         vm.stopBroadcast();

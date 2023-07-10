@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 // Uncomment this line to use console.log
 import "forge-std/console.sol";
 import {Vault} from "./Vault.sol";
-import {ImpactETHtoken} from "./imETHtoken.sol";
+import {StakeForImpactNFT} from './imNFT.sol';
 import {IstETH} from "./interfaces/IstETH.sol";
 import {Pausable} from 'openzeppelin-contracts/security/Pausable.sol';
 
@@ -18,7 +18,7 @@ struct VaultInfo {
 contract VaultFactory is Pausable {
 
     // @notice Instance of the ImpactETHtoken contract
-    ImpactETHtoken public imETH;
+    StakeForImpactNFT public imNFT;
 
     // @notice Instance of the stETH contract
     IstETH public stETH;
@@ -27,15 +27,26 @@ contract VaultFactory is Pausable {
     VaultInfo[] public vaults;
 
     // @notice imETH contract address
-    address public imEthAddress;
+    address public imNFTaddress;
 
-    // @notice Boolean variable that indicates if the contract is active or not
-    bool public isContractActive;
+    /**
+        @notice Event that is emitted when a new vault is created
+        @param vaultAddress Address of the new vault
+        @param beneficiary Address of the beneficiary (Charity, fund, NGO, etc.)
+        @param name Name of the vault
+        @param description Description of the vault
+        @param msgSender Address of the user who created the vault
+     */
+    event VaultCreated(
+        address indexed vaultAddress,
+        address indexed beneficiary,
+        string name,
+        string description,
+        address indexed msgSender);
 
-    constructor(address _stETH, address _imETH) {
-        stETH = IstETH(_stETH);
-        imEthAddress = address(_imETH);
-        imETH = ImpactETHtoken(_imETH);
+    constructor(address _stETHaddress, address _imNFTaddress) {
+        stETH = IstETH(_stETHaddress); 
+        imNFT = StakeForImpactNFT(_imNFTaddress);
     }
 
     /**
@@ -52,9 +63,9 @@ contract VaultFactory is Pausable {
         Vault newVault = new Vault(
             address(stETH),
             _beneficiary,
-            address(imETH)
+            address(imNFT)
         );
-        imETH.grantMinterRole(address(newVault));
+        imNFT.grantMinterRole(address(newVault));
         VaultInfo memory newVaultInfo = VaultInfo(
             name,
             description,
@@ -62,6 +73,13 @@ contract VaultFactory is Pausable {
             address(newVault)
         );
         vaults.push(newVaultInfo);
+        emit VaultCreated(
+            address(newVault),
+            _beneficiary,
+            name,
+            description,
+            msg.sender
+        );
     }
 
     /**
