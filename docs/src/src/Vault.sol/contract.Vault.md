@@ -1,8 +1,8 @@
 # Vault
-[Git Source](https://github.com/stake-for-impact/stake-for-impact-contracts/blob/695b7bcd51b692b533a2b354bd5483ff5163fb9b/src/Vault.sol)
+[Git Source](https://github.com/stake-for-impact/stake-for-impact-contracts/blob/41d39fa73e1fd805ac874252d72e779f9bd6f027/src/Vault.sol)
 
 **Inherits:**
-Ownable, Pausable
+Pausable
 
 Users can deposit ETH to this contract, that will be staked with Lido.
 The staking rewards will be distributed to the beneficairy of the contract.
@@ -16,10 +16,10 @@ IstETH public stETH;
 ```
 
 
-### imETH
+### imNFT
 
 ```solidity
-ImpactETHtoken public imETH;
+StakeForImpactNFT public imNFT;
 ```
 
 
@@ -37,19 +37,12 @@ uint256 public totalDepositedEth;
 ```
 
 
-### userBalance
-
-```solidity
-mapping(address => uint256) public userBalance;
-```
-
-
 ## Functions
 ### constructor
 
 
 ```solidity
-constructor(address _stETHaddress, address _beneficiary, address _imETHaddress);
+constructor(address _stETHaddress, address _beneficiary, address _imNFTaddress);
 ```
 
 ### deposit
@@ -58,23 +51,23 @@ This function allows users to deposit ETH to the contract. The amount of ETH dep
 
 
 ```solidity
-function deposit() external payable whenNotPaused;
+function deposit() external payable whenNotPaused returns (uint256);
 ```
 
 ### withdraw
 
-This function allows users to withdraw funds from the contract. The withdrawal amount should not exceed
-user's initial deposit. Amount of the imETH tokens will be burned
+This function allows users to withdraw funds from the contract. Fractional withdrawals are not supported. User can withdraw the full
+amount deposited and imNFT associated with the deposit will be burned
 
 
 ```solidity
-function withdraw(uint256 _amountToWithdraw) external;
+function withdraw(uint256 tokenId) external;
 ```
 **Parameters**
 
 |Name|Type|Description|
 |----|----|-----------|
-|`_amountToWithdraw`|`uint256`|Amount of funds to withdraw|
+|`tokenId`|`uint256`|Token ID of the imNFT token user wants to withdraw|
 
 
 ### stakeToLido
@@ -102,7 +95,7 @@ have withdrawn their stakes.
 
 
 ```solidity
-function transferResidues() external onlyOwner;
+function transferResidues() external;
 ```
 
 ### receive
@@ -116,13 +109,13 @@ receive() external payable;
 ### Deposit
 
 ```solidity
-event Deposit(address indexed user, uint256 amount);
+event Deposit(address indexed user, uint256 amount, uint256 tokenId);
 ```
 
 ### Withdraw
 
 ```solidity
-event Withdraw(address indexed user, uint256 amount);
+event Withdraw(address indexed user, uint256 amount, uint256 tokenId);
 ```
 
 ### StakeToLido
