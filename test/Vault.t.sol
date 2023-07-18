@@ -64,6 +64,28 @@ contract VaultTest is Test, IERC721Receiver {
         //assertEq(stETH.balanceOf(beneficiaryAddress), stETH.balanceOf(address(vault)) - stETH.getSharesByPooledEth(imETH.totalSupply()));
     }
 
+    function testMultipleVaults () public {
+        factory.createVault(0xe688b84b23f322a994A53dbF8E15FA82CDB71127, "TestVault1", "TestVault1");
+        factory.createVault(0xe688b84b23f322a994A53dbF8E15FA82CDB71127, "TestVault2", "TestVault2");
+        (,,,address vault1address) = factory.vaults(0);
+        (,,,address vault2address) = factory.vaults(1);
+        Vault vault1 = Vault(payable(vault1address));
+        Vault vault2 = Vault(payable(vault2address));
+        uint256 tokenId1 = vault1.deposit{value: 100 ether}();
+        uint256 tokenId2 = vault2.deposit{value: 300 ether}();
+        console.log("Vault1 address:", address(vault1));
+        console.log("Vault2 address:", address(vault2));
+        vm.expectRevert("This NFT is not associated with this vault");
+        vault2.withdraw(tokenId1);
+        imNFT.safeTransferFrom(address(this), 0xa24DbaEf7b10866d9F195ca829395676f8DA6c10, tokenId1);
+        console.log("Owner of tokenId1:", imNFT.ownerOf(tokenId1));
+        vm.startPrank(0xa24DbaEf7b10866d9F195ca829395676f8DA6c10);
+        imNFT.approve(address(vault1), tokenId1);
+        vault1.withdraw(tokenId1);
+        vm.stopPrank();
+        assertEq(stETH.balanceOf(0xa24DbaEf7b10866d9F195ca829395676f8DA6c10), 100 ether);
+    }
+
     function onERC721Received(
         address operator,
         address from,

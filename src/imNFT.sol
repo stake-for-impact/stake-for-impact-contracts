@@ -7,7 +7,7 @@ import "openzeppelin-contracts/access/AccessControl.sol";
 import "openzeppelin-contracts/utils/Counters.sol";
 
 struct NFTinfo {
-        address vault;
+        address vaultAddress;
         uint256 depositAmount;
 }
 
@@ -36,18 +36,18 @@ contract StakeForImpactNFT is ERC721, ERC721Burnable, AccessControl {
     /**
         @notice This function will be called by vaults to issue an NFT when user deposits to vault. Parameters are written into struct
         @param to address of the user who will receive the NFT
-        @param vault address of the Vault user is depositing to
+        @param vaultAddress address of the Vault user is depositing to
         @param depositAmount amount of ETH user is depositing to the Vault
     */
-    function safeMint(address to, address vault, uint256 depositAmount) public onlyRole(MINTER_ROLE) returns (uint256) {
+    function safeMint(address to, address vaultAddress, uint256 depositAmount) public onlyRole(MINTER_ROLE) returns (uint256) {
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
         _safeMint(to, tokenId);
         _tokenDetails[tokenId] = NFTinfo({
-                vault: vault,
+                vaultAddress: vaultAddress,
                 depositAmount: depositAmount
         });
-        emit NFTMinted(to, vault, depositAmount);
+        emit NFTMinted(to, vaultAddress, depositAmount);
         return tokenId;
     }
 

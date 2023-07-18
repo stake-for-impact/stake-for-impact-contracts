@@ -62,6 +62,7 @@ contract Vault is Pausable {
     function withdraw(uint256 tokenId) external {
         require(imNFT.ownerOf(tokenId) == msg.sender, 'You are not the owner of this NFT');
         NFTinfo memory nftInfo = imNFT.getTokenDetails(tokenId);
+        require(nftInfo.vaultAddress == address(this), 'This NFT is not associated with this vault');
         uint256 _ETHtoWithdraw = nftInfo.depositAmount;
         totalDepositedEth -= _ETHtoWithdraw;
         imNFT.burn(tokenId);

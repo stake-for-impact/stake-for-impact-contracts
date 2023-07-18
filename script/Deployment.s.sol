@@ -5,6 +5,7 @@ import {Script} from 'forge-std/Script.sol';
 import {StakeForImpactNFT} from '../src/imNFT.sol';
 import {Vault} from '../src/Vault.sol';
 import {VaultFactory} from '../src/VaultFactory.sol';
+import "forge-std/console.sol";
 
 contract Deployment is Script {
     Vault public vault;
@@ -19,10 +20,10 @@ contract Deployment is Script {
 
         vm.startBroadcast(deployerPrivateKey);
 
-        imNFT = new StakeForImpactNFT();
-        vaultFactory = new VaultFactory(stEthAddress, address(imNFT));
+        address vaultFactoryAddress = 0xf796e79C9C4CE508dEAe787bDC95F58f473B192d;
+        vaultFactory = VaultFactory(vaultFactoryAddress);
         vaultFactory.createVault(beneficiaryAddress, "TestVault", "This is a test vault and factory of Stake for Impact system");
-
+        //console.log("Vault address:", address(vaultFactory.vaults(0)));
         vm.stopBroadcast();
     }
 }
