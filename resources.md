@@ -7,3 +7,5 @@
 [Devfolio project profile](https://devfolio.co/projects/stake-for-impact-d30f)
 
 [ETHPrague hackathon demo](https://stakeforimpact.netlify.app/)
+
+Discord
