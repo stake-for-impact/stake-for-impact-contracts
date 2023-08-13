@@ -10,4 +10,3 @@
 * [Deployment addresses](deployment-addresses.md)
 * [Creating a campaign](creating-a-campaign.md)
 * [How to stake?](how-to-stake.md)
-* [Test page](test-page.md)
