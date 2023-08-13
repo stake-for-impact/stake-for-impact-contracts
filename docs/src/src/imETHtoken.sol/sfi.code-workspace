@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../../../../../new-wagmi-test/my-app"
+		},
+		{
+			"path": "../../../../../sfi-nft-deployment1"
+		},
+		{
+			"path": "../../../.."
+		}
+	],
+	"settings": {}
+}
