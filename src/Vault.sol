@@ -98,6 +98,15 @@ contract Vault is Pausable {
         stETH.transfer(beneficiaryAddress, stETH.sharesOf(address(this)));
     }
 
+    /**
+        @notice This function can be called to check amount of unharvested staking rewards 
+    */
+    function checkUnharvestedRewards() external view returns(uint256) {
+        uint256 _totalLidoShares = stETH.sharesOf(address(this));
+        uint256 unharvestedRewards = _totalLidoShares - stETH.getSharesByPooledEth(totalDepositedEth);
+        return unharvestedRewards;
+    }
+
     // * receive function
     receive() external payable {
             imNFT.safeMint(msg.sender, address(this), msg.value);(msg.sender, msg.value);
