@@ -8,9 +8,9 @@ It's a permissionless protocol that connects fundraisers in seek of crowdfunding
 
 The protocol is build with transparency and simplicity in mind. It is considered to be a public good that is available for anyone to use. Therefore, the protocol is free to use, completely permisionless (anyone can create campaigns) and governance free.
 
-<figure><img src="https://github.com/stake-for-impact/stake-for-impact-contracts/blob/main/docs/src/.gitbook/assets/SFIarchitecture.png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/SFIarchitecture.png" alt=""><figcaption></figcaption></figure>
 
-Someone can create a campaign by simply providing beneficiary Ethereum compatible wallet address.
+Anyone can create a campaign by simply providing beneficiary Ethereum compatible wallet address, campaign name and its description.
 
 Current version of the protocol allows people to support the campaigns they care about by depositing ETH to the respective vault. In return, stakers receive an NFT representing their stake in the protocol.
 
