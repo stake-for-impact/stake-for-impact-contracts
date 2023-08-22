@@ -1,6 +1,7 @@
 # Table of contents
 
 * [What is Stake for Impact?](README.md)
+<<<<<<< HEAD
 * [Contracts](contracts/README.md)
   * [VaultFactory](contracts/vaultfactory.md)
   * [VaultInfo](contracts/vaultinfo.md)
@@ -11,3 +12,14 @@
 * [Creating a campaign](creating-a-campaign.md)
 * [How to stake?](how-to-stake.md)
 * [Resources](resources.md)
+=======
+* [Contracts](src/README.md)
+  * [VaultFactory](src/contract.VaultFactory.md)
+  * [VaultInfo](src/struct.VaultInfo.md)
+  * [StakeForImpactNFT](src/contract.StakeForImpactNFT.md)
+  * [NFTinfo](src/struct.NFTinfo.md)
+  * [Vault](src/contract.Vault.md)
+* [Deployment addresses](deployment-addresses.md)
+* [Creating a campaign](creating-a-campaign.md)
+* [How to stake?](how-to-stake.md)
+>>>>>>> 8045f19 (Organised docs)

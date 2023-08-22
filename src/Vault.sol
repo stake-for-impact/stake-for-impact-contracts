@@ -64,7 +64,7 @@ contract Vault is Pausable {
         NFTinfo memory nftInfo = imNFT.getTokenDetails(tokenId);
         require(nftInfo.vaultAddress == address(this), 'This NFT is not associated with this vault');
         uint256 _ETHtoWithdraw = nftInfo.depositAmount;
-        totalDepositedEth -= _ETHtoWithdraw;
+        totalDepositedEth -= nftInfo.depositAmount;
         imNFT.burn(tokenId);
         stETH.transferShares(msg.sender, stETH.getSharesByPooledEth(_ETHtoWithdraw));
         emit Withdraw(msg.sender, _ETHtoWithdraw, tokenId);
@@ -85,7 +85,8 @@ contract Vault is Pausable {
         uint256 _totalLidoShares = stETH.sharesOf(address(this));
         uint256 unharvestedRewards = _totalLidoShares - stETH.getSharesByPooledEth(totalDepositedEth);
         require(unharvestedRewards > 0, 'No rewards to harvest');
-        stETH.transfer(beneficiaryAddress, stETH.getPooledEthByShares(unharvestedRewards));
+        bool success = stETH.transfer(beneficiaryAddress, stETH.getPooledEthByShares(unharvestedRewards));
+        require(success, "Transfer failed");
         emit HarvestRewards(unharvestedRewards);
     }
 
@@ -95,7 +96,9 @@ contract Vault is Pausable {
     */
     function transferResidues() external {
         require(this.totalDepositedEth() == 0, 'There are still depositors');
-        stETH.transfer(beneficiaryAddress, stETH.sharesOf(address(this)));
+        bool success = stETH.transfer(beneficiaryAddress, stETH.sharesOf(address(this)));
+        require(success, "Transfer failed");
+        emit HarvestRewards(stETH.sharesOf(address(this)));
     }
 
     /**
